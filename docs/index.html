@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Recherche en mémoire à court terme · Sternberg</title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./experiment.js"></script>
+  <link rel="stylesheet" href="./style.css?v=2">
+  <script type="module" src="./experiment.js?v=2"></script>
 </head>
 <body>
   <main>
@@ -15,10 +15,15 @@
     </header>
 
     <section id="intro" aria-labelledby="intro-title">
-      <h2 id="intro-title">Chiffres et lettres</h2>
-      <p>Mémorisez les symboles qui apparaissent un à un. Après le signal, indiquez si le symbole de test faisait partie de la série. Saisissez ensuite la série dans l’ordre où elle est apparue.</p>
+      <h2 id="intro-title">Choisir un test</h2>
+      <p>Mémorisez les éléments qui apparaissent un à un. Après le signal, indiquez si l’élément de test faisait partie de la série. Reconstituez ensuite la série dans son ordre de présentation.</p>
       <p class="keys"><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
       <form id="session-form">
+        <fieldset>
+          <legend>Type de test</legend>
+          <label><input type="radio" name="stimulus_type" value="digits" required> Chiffres</label>
+          <label><input type="radio" name="stimulus_type" value="symbols" required> Symboles abstraits</label>
+        </fieldset>
         <fieldset>
           <legend>Modalité de passation</legend>
           <label><input type="radio" name="mode" value="presentiel" required> En présentiel</label>
@@ -26,8 +31,8 @@
         </fieldset>
         <fieldset>
           <legend>Durée de la session</legend>
-          <label><input type="radio" name="session_type" value="demo" checked> Démonstration · 12 essais</label>
-          <label><input type="radio" name="session_type" value="pilot"> Pilote · 144 essais et entraînement</label>
+          <label><input type="radio" name="session_type" value="demo" checked> Démonstration · 6 essais</label>
+          <label><input type="radio" name="session_type" value="pilot"> Pilote · 72 essais et entraînement</label>
         </fieldset>
         <button type="submit">Commencer</button>
       </form>
@@ -49,9 +54,14 @@
       <p id="decision-keys" class="keys" hidden><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
       <form id="recall-form" hidden>
         <p id="decision-feedback"></p>
-        <label for="recall-input">Série dans l’ordre de présentation</label>
-        <input id="recall-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="recall-help">
-        <p id="recall-help" class="note">Les espaces sont facultatifs. Vous pouvez utiliser « ? » pour un symbole oublié ou laisser le champ vide.</p>
+        <h2 id="recall-title" tabindex="-1">Reconstituez la série</h2>
+        <p>Choisissez les éléments dans l’ordre de présentation. Si aucun élément ne vous revient, validez la série vide.</p>
+        <div id="recall-options" class="recall-options" role="group" aria-label="Éléments à choisir"></div>
+        <ol id="recall-sequence" class="recall-sequence" aria-label="Série sélectionnée" aria-live="polite"></ol>
+        <div class="recall-actions">
+          <button type="button" class="secondary" data-item="?">Élément oublié</button>
+          <button type="button" class="secondary" id="undo-recall">Retirer le dernier</button>
+        </div>
         <button type="submit">Valider la série</button>
       </form>
     </section>
@@ -60,7 +70,7 @@
       <h2 id="result-title" tabindex="-1">Session terminée</h2>
       <p id="result-summary"></p>
       <button id="download" type="button">Télécharger le CSV</button>
-      <button id="restart" type="button" class="secondary">Recommencer</button>
+      <button id="restart" type="button" class="secondary">Choisir un test</button>
     </section>
 
     <footer>

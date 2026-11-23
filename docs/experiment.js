@@ -1,4 +1,4 @@
-import { makeBlocks } from "./trials.js";
+import { makeBlocks, shuffled, STIMULI, SYMBOL_PATHS } from "./trials.js?v=2";
 
 const TIMING = {
   fixation: 500,
@@ -9,9 +9,10 @@ const TIMING = {
 };
 
 const RESPONSE_KEYS = new Map([["f", "oui"], ["j", "non"]]);
-const TYPE_LABELS = { digits: "Chiffres", letters: "Lettres" };
+const TYPE_LABELS = { digits: "Chiffres", symbols: "Symboles abstraits" };
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const COLUMNS = [
-  "session_id", "session_type", "mode", "condition_order", "block", "phase", "stimulus_type",
+  "session_id", "session_type", "mode", "block", "phase", "stimulus_type",
   "trial", "set_size", "sequence", "probe", "target_present", "response", "correct", "rt_ms",
   "focus_lost", "recall_sequence", "recall_correct", "recall_positions_correct", "recall_focus_lost",
   "browser",
@@ -19,7 +20,7 @@ const COLUMNS = [
 
 const intro = document.querySelector("#intro");
 const form = document.querySelector("#session-form");
-const start = form.querySelector("button");
+const testChoice = form.querySelector('[name="stimulus_type"]');
 const transition = document.querySelector("#transition");
 const blockTitle = document.querySelector("#block-title");
 const blockDescription = document.querySelector("#block-description");
@@ -31,7 +32,11 @@ const phase = document.querySelector("#phase");
 const stimulus = document.querySelector("#stimulus");
 const decisionKeys = document.querySelector("#decision-keys");
 const recallForm = document.querySelector("#recall-form");
-const recallInput = document.querySelector("#recall-input");
+const recallTitle = document.querySelector("#recall-title");
+const recallOptions = document.querySelector("#recall-options");
+const recallSequence = document.querySelector("#recall-sequence");
+const undoRecall = document.querySelector("#undo-recall");
+const validateRecall = recallForm.querySelector('[type="submit"]');
 const decisionFeedback = document.querySelector("#decision-feedback");
 const result = document.querySelector("#result");
 const resultTitle = document.querySelector("#result-title");
@@ -40,9 +45,36 @@ const resultSummary = document.querySelector("#result-summary");
 let session = null;
 let trialHasLostFocus = false;
 
+function itemLabel(item) {
+  if (item === "?") return "Élément oublié";
+  return SYMBOL_PATHS[item] ? `Symbole abstrait ${Number(item.slice(1))}` : item;
+}
+
+function renderItem(element, item) {
+  const drawing = SYMBOL_PATHS[item];
+  if (!drawing) {
+    element.textContent = item;
+    return;
+  }
+  const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+  svg.classList.add("glyph");
+  svg.setAttribute("viewBox", "0 0 32 32");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(SVG_NAMESPACE, "path");
+  path.setAttribute("d", drawing);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "currentColor");
+  path.setAttribute("stroke-width", "2.4");
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("stroke-linejoin", "round");
+  svg.append(path);
+  element.replaceChildren(svg);
+}
+
 function show(label, value) {
   phase.textContent = label;
-  stimulus.textContent = value;
+  stimulus.setAttribute("aria-label", itemLabel(value));
+  renderItem(stimulus, value);
 }
 
 function showFor(label, value, duration) {
@@ -57,7 +89,7 @@ function showFor(label, value, duration) {
 function askForResponse(probe) {
   return new Promise(resolve => {
     requestAnimationFrame(() => {
-      show("Ce symbole était-il dans la série ?", probe);
+      show("Cet élément était-il dans la série ?", probe);
       decisionKeys.hidden = false;
       const onset = performance.now();
       const timeout = setTimeout(() => finish("timeout", ""), TIMING.responseLimit);
@@ -82,41 +114,63 @@ function askForResponse(probe) {
 }
 
 function askForRecall(trial, type, response, correct) {
+  const recalled = [];
+  const choices = shuffled(STIMULI[type]).map(item => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary recall-item";
+    button.dataset.item = item;
+    button.setAttribute("aria-label", itemLabel(item));
+    renderItem(button, item);
+    return button;
+  });
+  recallOptions.replaceChildren(...choices);
+  const itemButtons = recallForm.querySelectorAll("[data-item]");
+
+  function updateRecall() {
+    recallSequence.replaceChildren(...recalled.map(item => {
+      const entry = document.createElement("li");
+      entry.setAttribute("aria-label", itemLabel(item));
+      renderItem(entry, item);
+      return entry;
+    }));
+    for (const button of itemButtons) button.disabled = recalled.length >= trial.sequence.length;
+    undoRecall.disabled = recalled.length === 0;
+  }
+
+  updateRecall();
   screen.hidden = true;
   recallForm.hidden = false;
-  recallInput.value = "";
-  recallInput.setCustomValidity("");
   decisionFeedback.textContent = "Réponse incorrecte.";
   if (correct) decisionFeedback.textContent = "Réponse correcte.";
   if (response === "timeout") decisionFeedback.textContent = "Temps de réponse écoulé.";
-  recallInput.focus();
+  recallTitle.focus();
 
-  const allowed = type === "digits" ? /^[0-9?]*$/ : /^[A-Za-z?]*$/;
   return new Promise(resolve => {
-    function submitRecall(event) {
-      event.preventDefault();
-      const entered = recallInput.value.replace(/\s/g, "");
-      if (!allowed.test(entered) || entered.length > trial.sequence.length) {
-        const items = type === "digits" ? "chiffres" : "lettres";
-        recallInput.setCustomValidity(`Saisissez au maximum ${trial.sequence.length} ${items} ou « ? ».`);
-        recallInput.reportValidity();
-        return;
+    const listeners = new AbortController();
+    recallForm.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (button === undoRecall) {
+        recalled.pop();
+        updateRecall();
+        if (!recalled.length) choices[0].focus();
       }
-
-      recallForm.removeEventListener("submit", submitRecall);
+      if (button?.dataset.item && recalled.length < trial.sequence.length) {
+        recalled.push(button.dataset.item);
+        updateRecall();
+        if (recalled.length === trial.sequence.length) validateRecall.focus();
+      }
+    }, { signal: listeners.signal });
+    recallForm.addEventListener("submit", event => {
+      event.preventDefault();
+      listeners.abort();
       recallForm.hidden = true;
       screen.hidden = false;
       screen.focus();
-      resolve([...entered.toUpperCase()]);
-    }
-    recallForm.addEventListener("submit", submitRecall);
+      resolve(recalled);
+    }, { signal: listeners.signal });
   });
 }
-
-recallInput.addEventListener("input", () => recallInput.setCustomValidity(""));
-recallInput.addEventListener("keydown", event => {
-  if (event.repeat) event.preventDefault();
-});
 
 async function runTrial(trial, block, blockNumber) {
   trialHasLostFocus = document.hidden || !document.hasFocus();
@@ -138,7 +192,6 @@ async function runTrial(trial, block, blockNumber) {
     session_id: session.id,
     session_type: session.type,
     mode: session.mode,
-    condition_order: session.order,
     block: blockNumber,
     phase: block.phase,
     stimulus_type: block.type,
@@ -194,9 +247,9 @@ form.addEventListener("submit", async event => {
 
   const fields = new FormData(form);
   const type = fields.get("session_type");
-  const blocks = makeBlocks(type);
-  const order = [...new Set(blocks.map(block => block.type))].join("-");
-  session = { id: crypto.randomUUID(), mode: fields.get("mode"), type, order, rows: [] };
+  const stimulusType = fields.get("stimulus_type");
+  const blocks = makeBlocks(type, stimulusType);
+  session = { id: crypto.randomUUID(), mode: fields.get("mode"), type, stimulusType, rows: [] };
   intro.hidden = true;
 
   for (const [index, block] of blocks.entries()) {
@@ -207,7 +260,7 @@ form.addEventListener("submit", async event => {
   const correct = trials.filter(row => row.correct).length;
   const recalled = trials.filter(row => row.recall_correct).length;
   resultSummary.textContent =
-    `Décisions correctes ${correct}/${trials.length} · Séries rappelées dans l’ordre ${recalled}/${trials.length}`;
+    `${TYPE_LABELS[stimulusType]} · Décisions correctes ${correct}/${trials.length} · Séries rappelées dans l’ordre ${recalled}/${trials.length}`;
   result.hidden = false;
   resultTitle.focus();
 });
@@ -223,7 +276,7 @@ document.querySelector("#download").addEventListener("click", () => {
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = `sternberg-${session.type}-${session.mode}-${session.id}.csv`;
+  link.download = `sternberg-${session.type}-${session.mode}-${session.stimulusType}-${session.id}.csv`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -232,7 +285,8 @@ document.querySelector("#download").addEventListener("click", () => {
 
 document.querySelector("#restart").addEventListener("click", () => {
   session = null;
+  form.reset();
   result.hidden = true;
   intro.hidden = false;
-  start.focus();
+  testChoice.focus();
 });
