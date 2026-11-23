@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Recherche en mémoire à court terme · Sternberg</title>
   <link rel="stylesheet" href="./style.css?v=2">
-  <script type="module" src="./experiment.js?v=2"></script>
+  <script type="module" src="./experiment.js?v=3"></script>
 </head>
 <body>
   <main>
@@ -32,7 +32,7 @@
         <fieldset>
           <legend>Durée de la session</legend>
           <label><input type="radio" name="session_type" value="demo" checked> Démonstration · 6 essais</label>
-          <label><input type="radio" name="session_type" value="pilot"> Pilote · 72 essais et entraînement</label>
+          <label><input type="radio" name="session_type" value="pilot"> Pilote · 72 essais et 2 essais d’entraînement</label>
         </fieldset>
         <button type="submit">Commencer</button>
       </form>
@@ -69,6 +69,7 @@
     <section id="result" aria-labelledby="result-title" hidden>
       <h2 id="result-title" tabindex="-1">Session terminée</h2>
       <p id="result-summary"></p>
+      <p>Téléchargez le CSV et renvoyez-le à la personne qui vous a invité, par le canal privé indiqué dans l’invitation.</p>
       <button id="download" type="button">Télécharger le CSV</button>
       <button id="restart" type="button" class="secondary">Choisir un test</button>
     </section>

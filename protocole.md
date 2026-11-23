@@ -32,4 +32,4 @@ Le temps de décision part de l'affichage du symbole de test et s'arrête à la 
 
 Essayer les deux tests dans les deux modalités. Vérifier que les glyphes sont distincts et demander aux personnes du pilote si certains leur rappellent un symbole connu. Vérifier aussi la compréhension du signal et du rappel, le téléchargement du fichier et l'exactitude des réponses pour les séries de six éléments. Mesurer la durée et tester la remise des fichiers à distance. Figer ensuite les consignes, les temps, le nombre d'essais et les critères de validité avant la collecte principale.
 
-La démonstration propose 6 essais, un par longueur, pour le test choisi. La démonstration et le pilote permettent le téléchargement local d'un CSV. Prévoir un canal privé pour la remise des fichiers de la collecte principale.
+La démonstration propose 6 essais, un par longueur, pour le test choisi. Pour les passations à distance, envoyer le lien approprié depuis le [README](README.md) par message privé. À la fin, la personne télécharge son CSV et le renvoie dans la même conversation privée.

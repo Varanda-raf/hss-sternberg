@@ -45,6 +45,15 @@ const resultSummary = document.querySelector("#result-summary");
 let session = null;
 let trialHasLostFocus = false;
 
+const invite = new URLSearchParams(window.location.search);
+for (const [field, parameter] of [["mode", "mode"], ["session_type", "session"]]) {
+  const options = Array.from(form.elements.namedItem(field));
+  const selected = options.find(option => option.value === invite.get(parameter));
+  if (selected) {
+    for (const option of options) option.defaultChecked = option === selected;
+  }
+}
+
 function itemLabel(item) {
   if (item === "?") return "Élément oublié";
   return SYMBOL_PATHS[item] ? `Symbole abstrait ${Number(item.slice(1))}` : item;
