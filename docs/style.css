@@ -8,6 +8,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; padding: clamp(1rem, 5vw, 4rem) 1rem; }
 main { width: min(100%, 43rem); margin-inline: auto; }
 
@@ -20,7 +21,7 @@ header {
 h1, h2, p { margin-block-start: 0; }
 h1 { font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.13; margin-block-end: 0; }
 h2 { font-size: 1.28rem; line-height: 1.25; }
-.course, .note, .progress, footer { color: #475d76; }
+.course, .note, footer { color: #475d76; }
 .course { margin-block-end: 0.55rem; }
 
 section {
@@ -34,6 +35,19 @@ fieldset { border: 0; padding: 0; margin: 0 0 1.2rem; }
 legend { font-weight: 650; margin-block-end: 0.35rem; }
 label { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; margin-inline-end: 1.2rem; }
 input { margin: 0; }
+progress { display: block; width: 100%; height: 0.45rem; margin-block-end: 1rem; }
+
+#recall-input {
+  display: block;
+  width: 100%;
+  color: inherit;
+  border: 1px solid #7287a1;
+  border-radius: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  font: 650 1.2rem ui-monospace, monospace;
+}
+
+#recall-help { margin-block-end: 1rem; }
 
 button {
   cursor: pointer;

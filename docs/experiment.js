@@ -1,55 +1,44 @@
+import { makeBlocks } from "./trials.js";
+
 const TIMING = {
   fixation: 500,
-  digit: 1200,
+  item: 1200,
   delay: 2000,
   warning: 250,
   responseLimit: 4000,
 };
 
-const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-const SET_SIZES = [2, 4, 6];
 const RESPONSE_KEYS = new Map([["f", "oui"], ["j", "non"]]);
+const TYPE_LABELS = { digits: "Chiffres", letters: "Lettres" };
 const COLUMNS = [
-  "session_id", "session_type", "mode", "trial", "set_size", "digits", "probe",
-  "target_present", "response", "correct", "rt_ms", "focus_lost", "browser",
+  "session_id", "session_type", "mode", "condition_order", "block", "phase", "stimulus_type",
+  "trial", "set_size", "sequence", "probe", "target_present", "response", "correct", "rt_ms",
+  "focus_lost", "recall_sequence", "recall_correct", "recall_positions_correct", "recall_focus_lost",
+  "browser",
 ];
 
 const intro = document.querySelector("#intro");
 const form = document.querySelector("#session-form");
 const start = form.querySelector("button");
+const transition = document.querySelector("#transition");
+const blockTitle = document.querySelector("#block-title");
+const blockDescription = document.querySelector("#block-description");
+const continueBlock = document.querySelector("#continue-block");
 const task = document.querySelector("#task");
 const screen = document.querySelector("#screen");
 const progress = document.querySelector("#progress");
 const phase = document.querySelector("#phase");
 const stimulus = document.querySelector("#stimulus");
+const decisionKeys = document.querySelector("#decision-keys");
+const recallForm = document.querySelector("#recall-form");
+const recallInput = document.querySelector("#recall-input");
+const decisionFeedback = document.querySelector("#decision-feedback");
 const result = document.querySelector("#result");
 const resultTitle = document.querySelector("#result-title");
 const resultSummary = document.querySelector("#result-summary");
 
 let session = null;
 let trialHasLostFocus = false;
-
-function shuffled(values) {
-  const items = [...values];
-  for (let index = items.length - 1; index > 0; index -= 1) {
-    const other = Math.floor(Math.random() * (index + 1));
-    [items[index], items[other]] = [items[other], items[index]];
-  }
-  return items;
-}
-
-function makeDemoTrials() {
-  const trials = [];
-  for (const size of SET_SIZES) {
-    for (const targetPresent of [true, false]) {
-      const deck = shuffled(DIGITS);
-      const digits = deck.slice(0, size);
-      const probe = targetPresent ? digits[Math.floor(Math.random() * size)] : deck[size];
-      trials.push({ digits, probe, targetPresent });
-    }
-  }
-  return shuffled(trials);
-}
 
 function show(label, value) {
   phase.textContent = label;
@@ -68,13 +57,15 @@ function showFor(label, value, duration) {
 function askForResponse(probe) {
   return new Promise(resolve => {
     requestAnimationFrame(() => {
-      show("Ce chiffre était-il dans la série ?", probe);
+      show("Ce symbole était-il dans la série ?", probe);
+      decisionKeys.hidden = false;
       const onset = performance.now();
       const timeout = setTimeout(() => finish("timeout", ""), TIMING.responseLimit);
 
       function finish(response, rtMs) {
         clearTimeout(timeout);
         window.removeEventListener("keydown", readKey);
+        decisionKeys.hidden = true;
         resolve({ response, rtMs });
       }
 
@@ -90,30 +81,80 @@ function askForResponse(probe) {
   });
 }
 
-async function runTrial(trial, index, total) {
+function askForRecall(trial, type, response, correct) {
+  screen.hidden = true;
+  recallForm.hidden = false;
+  recallInput.value = "";
+  recallInput.setCustomValidity("");
+  decisionFeedback.textContent = "Réponse incorrecte.";
+  if (correct) decisionFeedback.textContent = "Réponse correcte.";
+  if (response === "timeout") decisionFeedback.textContent = "Temps de réponse écoulé.";
+  recallInput.focus();
+
+  const allowed = type === "digits" ? /^[0-9?]*$/ : /^[A-Za-z?]*$/;
+  return new Promise(resolve => {
+    function submitRecall(event) {
+      event.preventDefault();
+      const entered = recallInput.value.replace(/\s/g, "");
+      if (!allowed.test(entered) || entered.length > trial.sequence.length) {
+        const items = type === "digits" ? "chiffres" : "lettres";
+        recallInput.setCustomValidity(`Saisissez au maximum ${trial.sequence.length} ${items} ou « ? ».`);
+        recallInput.reportValidity();
+        return;
+      }
+
+      recallForm.removeEventListener("submit", submitRecall);
+      recallForm.hidden = true;
+      screen.hidden = false;
+      screen.focus();
+      resolve([...entered.toUpperCase()]);
+    }
+    recallForm.addEventListener("submit", submitRecall);
+  });
+}
+
+recallInput.addEventListener("input", () => recallInput.setCustomValidity(""));
+recallInput.addEventListener("keydown", event => {
+  if (event.repeat) event.preventDefault();
+});
+
+async function runTrial(trial, block, blockNumber) {
   trialHasLostFocus = document.hidden || !document.hasFocus();
-  progress.textContent = `Essai ${index + 1} sur ${total}`;
   await showFor("Fixation", "+", TIMING.fixation);
-  for (const digit of trial.digits) {
-    await showFor("Mémorisez", digit, TIMING.digit);
+  for (const item of trial.sequence) {
+    await showFor("Mémorisez", item, TIMING.item);
   }
   await showFor("", "", TIMING.delay);
   await showFor("", "●", TIMING.warning);
   const { response, rtMs } = await askForResponse(trial.probe);
+  const decisionFocusLost = trialHasLostFocus;
+  const correct = response === (trial.targetPresent ? "oui" : "non");
+  trialHasLostFocus = document.hidden || !document.hasFocus();
+  show("", "");
+  const recalled = await askForRecall(trial, block.type, response, correct);
+  const correctPositions = trial.sequence.filter((item, position) => item === recalled[position]).length;
 
   return {
     session_id: session.id,
-    session_type: "demo",
+    session_type: session.type,
     mode: session.mode,
-    trial: index + 1,
-    set_size: trial.digits.length,
-    digits: trial.digits.join(" "),
+    condition_order: session.order,
+    block: blockNumber,
+    phase: block.phase,
+    stimulus_type: block.type,
+    trial: session.rows.length + 1,
+    set_size: trial.sequence.length,
+    sequence: trial.sequence.join(" "),
     probe: trial.probe,
     target_present: trial.targetPresent,
     response,
-    correct: response === (trial.targetPresent ? "oui" : "non"),
+    correct,
     rt_ms: rtMs,
-    focus_lost: trialHasLostFocus,
+    focus_lost: decisionFocusLost,
+    recall_sequence: recalled.join(" "),
+    recall_correct: correctPositions === trial.sequence.length,
+    recall_positions_correct: correctPositions,
+    recall_focus_lost: trialHasLostFocus,
     browser: navigator.userAgent,
   };
 }
@@ -127,24 +168,46 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden) recordFocusLoss();
 });
 
+async function runBlock(block, index, total) {
+  const label = block.phase === "practice" ? "Entraînement" : "Bloc";
+  blockTitle.textContent = `${label} ${index + 1} sur ${total} · ${TYPE_LABELS[block.type]}`;
+  blockDescription.textContent = `${block.trials.length} essais. Reprenez quand vous êtes prêt.`;
+  transition.hidden = false;
+  continueBlock.focus();
+  await new Promise(resolve => continueBlock.addEventListener("click", resolve, { once: true }));
+  transition.hidden = true;
+  progress.max = block.trials.length;
+  progress.value = 0;
+  task.hidden = false;
+  screen.focus();
+
+  for (const trial of block.trials) {
+    session.rows.push(await runTrial(trial, block, index + 1));
+    progress.value += 1;
+  }
+  task.hidden = true;
+}
+
 form.addEventListener("submit", async event => {
   event.preventDefault();
   if (session) return;
 
-  const mode = new FormData(form).get("mode");
-  session = { id: crypto.randomUUID(), mode, rows: [] };
-  const trials = makeDemoTrials();
+  const fields = new FormData(form);
+  const type = fields.get("session_type");
+  const blocks = makeBlocks(type);
+  const order = [...new Set(blocks.map(block => block.type))].join("-");
+  session = { id: crypto.randomUUID(), mode: fields.get("mode"), type, order, rows: [] };
   intro.hidden = true;
-  task.hidden = false;
-  screen.focus();
 
-  for (const [index, trial] of trials.entries()) {
-    session.rows.push(await runTrial(trial, index, trials.length));
+  for (const [index, block] of blocks.entries()) {
+    await runBlock(block, index, blocks.length);
   }
 
-  const correct = session.rows.filter(row => row.correct).length;
-  resultSummary.textContent = `${correct} réponse(s) correcte(s) sur ${trials.length}.`;
-  task.hidden = true;
+  const trials = session.rows.filter(row => row.phase === "test");
+  const correct = trials.filter(row => row.correct).length;
+  const recalled = trials.filter(row => row.recall_correct).length;
+  resultSummary.textContent =
+    `Décisions correctes ${correct}/${trials.length} · Séries rappelées dans l’ordre ${recalled}/${trials.length}`;
   result.hidden = false;
   resultTitle.focus();
 });
@@ -160,7 +223,7 @@ document.querySelector("#download").addEventListener("click", () => {
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = `sternberg-demo-${session.mode}-${session.id}.csv`;
+  link.download = `sternberg-${session.type}-${session.mode}-${session.id}.csv`;
   document.body.append(link);
   link.click();
   link.remove();

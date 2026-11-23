@@ -15,8 +15,8 @@
     </header>
 
     <section id="intro" aria-labelledby="intro-title">
-      <h2 id="intro-title">Démonstration de six essais</h2>
-      <p>Mémorisez les chiffres qui apparaissent un à un. Après la pause et le signal, indiquez si le chiffre de test faisait partie de la série.</p>
+      <h2 id="intro-title">Chiffres et lettres</h2>
+      <p>Mémorisez les symboles qui apparaissent un à un. Après le signal, indiquez si le symbole de test faisait partie de la série. Saisissez ensuite la série dans l’ordre où elle est apparue.</p>
       <p class="keys"><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
       <form id="session-form">
         <fieldset>
@@ -24,22 +24,40 @@
           <label><input type="radio" name="mode" value="presentiel" required> En présentiel</label>
           <label><input type="radio" name="mode" value="distance" required> À distance</label>
         </fieldset>
+        <fieldset>
+          <legend>Durée de la session</legend>
+          <label><input type="radio" name="session_type" value="demo" checked> Démonstration · 12 essais</label>
+          <label><input type="radio" name="session_type" value="pilot"> Pilote · 144 essais et entraînement</label>
+        </fieldset>
         <button type="submit">Commencer</button>
       </form>
-      <p class="note">Utilisez un clavier physique. Le fichier de démonstration se télécharge à la fin.</p>
+      <p class="note">Utilisez un clavier physique. Vous pourrez télécharger votre fichier à la fin de la session.</p>
+    </section>
+
+    <section id="transition" aria-labelledby="block-title" hidden>
+      <h2 id="block-title"></h2>
+      <p id="block-description"></p>
+      <button id="continue-block" type="button">Continuer</button>
     </section>
 
     <section id="task" aria-label="Essai en cours" hidden>
-      <p id="progress" class="progress"></p>
+      <progress id="progress" aria-label="Avancement du bloc"></progress>
       <div id="screen" class="screen" tabindex="-1">
         <p id="phase"></p>
         <p id="stimulus"></p>
       </div>
-      <p class="keys"><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
+      <p id="decision-keys" class="keys" hidden><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
+      <form id="recall-form" hidden>
+        <p id="decision-feedback"></p>
+        <label for="recall-input">Série dans l’ordre de présentation</label>
+        <input id="recall-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="recall-help">
+        <p id="recall-help" class="note">Les espaces sont facultatifs. Vous pouvez utiliser « ? » pour un symbole oublié ou laisser le champ vide.</p>
+        <button type="submit">Valider la série</button>
+      </form>
     </section>
 
     <section id="result" aria-labelledby="result-title" hidden>
-      <h2 id="result-title" tabindex="-1">Démonstration terminée</h2>
+      <h2 id="result-title" tabindex="-1">Session terminée</h2>
       <p id="result-summary"></p>
       <button id="download" type="button">Télécharger le CSV</button>
       <button id="restart" type="button" class="secondary">Recommencer</button>
