@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recherche en mémoire à court terme · Sternberg</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./experiment.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="course">Projet HSS · Tâche de Sternberg</p>
+      <h1>Recherche en mémoire à court terme</h1>
+    </header>
+
+    <section id="intro" aria-labelledby="intro-title">
+      <h2 id="intro-title">Démonstration de six essais</h2>
+      <p>Mémorisez les chiffres qui apparaissent un à un. Après la pause et le signal, indiquez si le chiffre de test faisait partie de la série.</p>
+      <p class="keys"><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
+      <form id="session-form">
+        <fieldset>
+          <legend>Modalité de passation</legend>
+          <label><input type="radio" name="mode" value="presentiel" required> En présentiel</label>
+          <label><input type="radio" name="mode" value="distance" required> À distance</label>
+        </fieldset>
+        <button type="submit">Commencer</button>
+      </form>
+      <p class="note">Utilisez un clavier physique. Le fichier de démonstration se télécharge à la fin.</p>
+    </section>
+
+    <section id="task" aria-label="Essai en cours" hidden>
+      <p id="progress" class="progress"></p>
+      <div id="screen" class="screen" tabindex="-1">
+        <p id="phase"></p>
+        <p id="stimulus"></p>
+      </div>
+      <p class="keys"><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
+    </section>
+
+    <section id="result" aria-labelledby="result-title" hidden>
+      <h2 id="result-title" tabindex="-1">Démonstration terminée</h2>
+      <p id="result-summary"></p>
+      <button id="download" type="button">Télécharger le CSV</button>
+      <button id="restart" type="button" class="secondary">Recommencer</button>
+    </section>
+
+    <footer>
+      <a href="https://github.com/Varanda-raf/hss-sternberg">Code et protocole du projet</a>
+    </footer>
+  </main>
+</body>
+</html>

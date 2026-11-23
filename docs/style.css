@@ -1,0 +1,80 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  color: #14263e;
+  background: #f2f5f9;
+  line-height: 1.6;
+  accent-color: #183d75;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; padding: clamp(1rem, 5vw, 4rem) 1rem; }
+main { width: min(100%, 43rem); margin-inline: auto; }
+
+header {
+  border-block-start: 0.35rem solid #183d75;
+  padding-block-start: 1.25rem;
+  margin-block-end: 2rem;
+}
+
+h1, h2, p { margin-block-start: 0; }
+h1 { font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.13; margin-block-end: 0; }
+h2 { font-size: 1.28rem; line-height: 1.25; }
+.course, .note, .progress, footer { color: #475d76; }
+.course { margin-block-end: 0.55rem; }
+
+section {
+  background: #fff;
+  border: 1px solid #d7e0ec;
+  border-radius: 0.85rem;
+  padding: clamp(1rem, 4vw, 2rem);
+}
+
+fieldset { border: 0; padding: 0; margin: 0 0 1.2rem; }
+legend { font-weight: 650; margin-block-end: 0.35rem; }
+label { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; margin-inline-end: 1.2rem; }
+input { margin: 0; }
+
+button {
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  color: #fff;
+  background: #183d75;
+  border: 1px solid #183d75;
+  border-radius: 0.45rem;
+  padding: 0.55rem 1rem;
+  margin-block-end: 0.25rem;
+}
+
+button:hover { background: #122e59; }
+button.secondary { color: #183d75; background: #fff; }
+:focus-visible { outline: 3px solid #aa4815; outline-offset: 3px; }
+.note { margin-block: 0.8rem 0; }
+.keys { display: flex; flex-wrap: wrap; gap: 1.15rem; }
+
+kbd {
+  display: inline-block;
+  min-width: 1.85rem;
+  text-align: center;
+  background: #edf2f9;
+  border: 1px solid #d7e0ec;
+  border-radius: 0.25rem;
+  margin-inline-end: 0.2rem;
+  font-size: 1rem;
+}
+
+.screen {
+  display: grid;
+  grid-template-rows: 2.5rem 6rem;
+  place-items: center;
+  background: #f2f5f9;
+  border-radius: 0.65rem;
+  margin-block-end: 1.1rem;
+  padding: 1rem 0.5rem;
+}
+
+.screen p, #task .keys { margin: 0; }
+#stimulus { font-family: ui-monospace, monospace; font-size: 3.4rem; font-weight: 650; }
+footer { margin-block-start: 1rem; }
+a { color: #183d75; }
