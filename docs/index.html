@@ -3,80 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Recherche en mémoire à court terme · Sternberg</title>
-  <link rel="stylesheet" href="./style.css?v=2">
-  <script type="module" src="./experiment.js?v=3"></script>
+  <title>Mémoire à court terme · Projet HSS</title>
+  <link rel="stylesheet" href="./style.css?v=4">
+  <script type="module" src="./experiment.js?v=4"></script>
 </head>
 <body>
   <main>
-    <header>
-      <p class="course">Projet HSS · Tâche de Sternberg</p>
-      <h1>Recherche en mémoire à court terme</h1>
-    </header>
-
     <section id="intro" aria-labelledby="intro-title">
-      <h2 id="intro-title">Choisir un test</h2>
-      <p>Mémorisez les éléments qui apparaissent un à un. Après le signal, indiquez si l’élément de test faisait partie de la série. Reconstituez ensuite la série dans son ordre de présentation.</p>
-      <p class="keys"><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
-      <form id="session-form">
-        <fieldset>
-          <legend>Type de test</legend>
-          <label><input type="radio" name="stimulus_type" value="digits" required> Chiffres</label>
-          <label><input type="radio" name="stimulus_type" value="symbols" required> Symboles abstraits</label>
-        </fieldset>
-        <fieldset>
-          <legend>Modalité de passation</legend>
-          <label><input type="radio" name="mode" value="presentiel" required> En présentiel</label>
-          <label><input type="radio" name="mode" value="distance" required> À distance</label>
-        </fieldset>
-        <fieldset>
-          <legend>Durée de la session</legend>
-          <label><input type="radio" name="session_type" value="demo" checked> Démonstration · 6 essais</label>
-          <label><input type="radio" name="session_type" value="pilot"> Pilote · 72 essais et 2 essais d’entraînement</label>
-        </fieldset>
-        <button type="submit">Commencer</button>
+      <header>
+        <p class="course">Approches expérimentales de la cognition</p>
+        <h1 id="intro-title">Mémoire à court terme</h1>
+        <p class="lead">Mémorisez une courte série d’éléments. Après la pause, indiquez si l’élément affiché faisait partie de la série.</p>
+      </header>
+
+      <figure class="example">
+        <img src="./images/sequence.png" width="1440" height="438" alt="Une série de cartes, un écran vide, puis une carte à reconnaître">
+        <figcaption>
+          <span>Série</span>
+          <span>Pause</span>
+          <span>Élément à reconnaître</span>
+        </figcaption>
+      </figure>
+
+      <p class="test-length">Choisissez un test. La démonstration comporte 6 essais.</p>
+      <form id="test-form" aria-label="Choisir un test">
+        <button type="submit" value="digits">Chiffres</button>
+        <button type="submit" value="symbols">Symboles abstraits</button>
       </form>
-      <p class="note">Utilisez un clavier physique. Vous pourrez télécharger votre fichier à la fin de la session.</p>
+      <footer>
+        <a href="https://github.com/Varanda-raf/hss-sternberg">Protocole et code du projet</a>
+      </footer>
     </section>
 
-    <section id="transition" aria-labelledby="block-title" hidden>
-      <h2 id="block-title"></h2>
-      <p id="block-description"></p>
-      <button id="continue-block" type="button">Continuer</button>
-    </section>
-
-    <section id="task" aria-label="Essai en cours" hidden>
-      <progress id="progress" aria-label="Avancement du bloc"></progress>
-      <div id="screen" class="screen" tabindex="-1">
+    <section id="task" class="task" aria-label="Essai en cours" tabindex="-1" hidden>
+      <progress id="progress" aria-label="Avancement de la démonstration"></progress>
+      <div class="screen">
         <p id="phase"></p>
         <p id="stimulus"></p>
       </div>
-      <p id="decision-keys" class="keys" hidden><span><kbd>F</kbd> Oui</span><span><kbd>J</kbd> Non</span></p>
-      <form id="recall-form" hidden>
-        <p id="decision-feedback"></p>
-        <h2 id="recall-title" tabindex="-1">Reconstituez la série</h2>
-        <p>Choisissez les éléments dans l’ordre de présentation. Si aucun élément ne vous revient, validez la série vide.</p>
-        <div id="recall-options" class="recall-options" role="group" aria-label="Éléments à choisir"></div>
-        <ol id="recall-sequence" class="recall-sequence" aria-label="Série sélectionnée" aria-live="polite"></ol>
-        <div class="recall-actions">
-          <button type="button" class="secondary" data-item="?">Élément oublié</button>
-          <button type="button" class="secondary" id="undo-recall">Retirer le dernier</button>
-        </div>
-        <button type="submit">Valider la série</button>
-      </form>
+      <div id="response-buttons" class="response-buttons" aria-label="L’élément était-il dans la série ?">
+        <button type="button" value="oui" disabled>Oui</button>
+        <button type="button" value="non" disabled>Non</button>
+      </div>
     </section>
 
-    <section id="result" aria-labelledby="result-title" hidden>
-      <h2 id="result-title" tabindex="-1">Session terminée</h2>
+    <section id="result" class="result" aria-labelledby="result-title" hidden>
+      <h1 id="result-title" tabindex="-1">Démonstration terminée</h1>
       <p id="result-summary"></p>
-      <p>Téléchargez le CSV et renvoyez-le à la personne qui vous a invité, par le canal privé indiqué dans l’invitation.</p>
-      <button id="download" type="button">Télécharger le CSV</button>
-      <button id="restart" type="button" class="secondary">Choisir un test</button>
+      <p>Si vous avez reçu une invitation, vous pouvez télécharger le CSV et le renvoyer dans la même conversation privée.</p>
+      <div class="result-actions">
+        <button id="download" type="button">Télécharger le CSV</button>
+        <button id="restart" type="button" class="secondary">Choisir un autre test</button>
+      </div>
     </section>
-
-    <footer>
-      <a href="https://github.com/Varanda-raf/hss-sternberg">Code et protocole du projet</a>
-    </footer>
   </main>
+
 </body>
 </html>

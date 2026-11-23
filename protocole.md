@@ -15,21 +15,20 @@ Dans l'expérience 1 de Sternberg, chaque série comprenait **de 1 à 6 chiffres
 | Écran vide après le dernier symbole | 2 000 ms |
 | Signal d'avertissement visuel | 250 ms |
 | Symbole de test | Jusqu'à la réponse, avec une limite initiale de 4 000 ms |
-| Réponse | F pour « Oui », J pour « Non » |
-| Retour et rappel | Retour immédiat sur la décision, puis reconstruction de la suite dans l'ordre à partir d'une grille, sans limite de temps |
+| Réponse | Boutons « Oui » et « Non » à l'écran |
 
-Le temps de décision part de l'affichage du symbole de test et s'arrête à la frappe F/J. Le rappel est évalué séparément. La fixation, le signal visuel de 250 ms, la limite de réponse et le rappel assisté par une grille sont des choix pour cette adaptation au navigateur.
+Le temps de décision part de l'affichage du symbole de test et s'arrête à l'activation d'un bouton. Le mode de réponse est enregistré. La fixation, le signal visuel de 250 ms, la limite de réponse et la fin de l'essai après la décision sont des choix pour cette adaptation au navigateur.
 
 ## Plan de collecte
 
-- **Deux tests séparés.** Chaque participant choisit un seul test dans le cadre de la collecte. Le premier utilise les chiffres 0 à 9. Le second utilise dix glyphes abstraits dessinés pour le projet. Les glyphes sont affichés sans nom. Les deux tests ont les mêmes longueurs et durées. La grille de rappel propose les dix éléments du test choisi dans un ordre mélangé à chaque essai.
-- **Nombre d'essais.** Le pilote prévoit deux essais d'entraînement puis trois blocs de 24 essais pour le test choisi. Les 72 essais de test comprennent six essais avec cible présente et six avec cible absente pour chaque longueur. Les essais sont mélangés dans chaque bloc. La fréquence des positions de la cible est équilibrée à un essai près par longueur.
-- **Modalité entre participants.** Chaque personne participe une fois, à distance ou en présentiel. Pour les personnes pouvant faire les deux, privilégier une répartition aléatoire et équilibrée. Si l'affectation dépend des disponibilités, documenter ce choix et interpréter la comparaison comme descriptive.
-- **Mêmes conditions logicielles.** Utiliser la même version web, les mêmes touches de réponse et les mêmes instructions dans les deux modalités. Demander un ordinateur et un clavier physique. Consigner le navigateur et les pertes de focus pendant les essais. Les différences de matériel et d'environnement seront discutées avec les résultats.
+- **Deux tests séparés.** La démonstration propose spontanément le choix entre les chiffres 0 à 9 et dix glyphes abstraits provisoires. Les deux tests ont les mêmes longueurs et durées.
+- **Nombre d'essais.** La démonstration comporte six essais, un par longueur. Pour l'étude, déterminer le nombre d'essais après le pilote. Équilibrer les cibles présentes et absentes pour chaque longueur et répartir les positions des cibles sur les essais positifs.
+- **Modalité.** Le site public enregistre une session à distance et la version lancée sur la machine de l'expérimentateur via localhost enregistre une session en présentiel. L'appareil et la modalité peuvent varier ensemble.
+- **Mêmes conditions logicielles.** Les mêmes boutons et instructions sont disponibles sur téléphone et ordinateur. Le CSV consigne le mode de réponse, le navigateur, la taille de la fenêtre et les pertes de focus. Pour comparer les modalités, privilégier les contrastes de temps mesurés avec un type d'appareil et de réponse comparable.
 - **Effectif.** Le minimum du cours est de dix participants au total. Pour comparer les modalités, viser dix sessions valides par modalité si le recrutement le permet et suivre la répartition entre les deux tests. Une comparaison entre les tests reste exploratoire puisque les participants choisissent eux-mêmes leur test.
 
 ## Pilote
 
-Essayer les deux tests dans les deux modalités. Vérifier que les glyphes sont distincts et demander aux personnes du pilote si certains leur rappellent un symbole connu. Vérifier aussi la compréhension du signal et du rappel, le téléchargement du fichier et l'exactitude des réponses pour les séries de six éléments. Mesurer la durée et tester la remise des fichiers à distance. Figer ensuite les consignes, les temps, le nombre d'essais et les critères de validité avant la collecte principale.
+Essayer les deux tests dans les deux modalités. Vérifier que les glyphes sont distincts et demander aux personnes du pilote si certains leur rappellent un symbole connu. Vérifier aussi la compréhension des consignes, les boutons sur téléphone, le téléchargement du fichier et l'exactitude des réponses pour les séries de six éléments. Mesurer la durée et tester la remise des fichiers à distance. Figer ensuite les stimuli, les temps, le nombre d'essais et les critères de validité avant la collecte principale.
 
-La démonstration propose 6 essais, un par longueur, pour le test choisi. Pour les passations à distance, envoyer le lien approprié depuis le [README](README.md) par message privé. À la fin, la personne télécharge son CSV et le renvoie dans la même conversation privée.
+Pour les essais à distance, envoyer le lien de démonstration depuis le [README](README.md) par message privé. À la fin, la personne peut télécharger son CSV et le renvoyer dans la même conversation privée. Les données de démonstration servent à tester le parcours.
