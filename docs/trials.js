@@ -17,7 +17,7 @@ export const STIMULI = {
 };
 
 const SET_SIZES = [1, 2, 3, 4, 5, 6];
-const BLOCKS_PER_TYPE = 3;
+const TEST_BLOCKS = 3;
 
 export function shuffled(values) {
   const items = [...values];
@@ -38,37 +38,20 @@ function makeTrial(type, size, targetPosition) {
   };
 }
 
-function pilotBlocks(type) {
+export function makeBlocks(type) {
   const positions = SET_SIZES.map(size => shuffled(Array.from({ length: size }, (_, index) => index)));
-  const practicePositions = shuffled([0, 1]);
   const practice = {
-    type,
     phase: "practice",
-    trials: shuffled([makeTrial(type, 2, practicePositions[0]), makeTrial(type, 4, null)]),
+    number: 0,
+    trials: shuffled([makeTrial(type, 2, Math.floor(Math.random() * 2)), makeTrial(type, 4, null)]),
   };
-  const testBlocks = Array.from({ length: BLOCKS_PER_TYPE }, (_, blockIndex) => {
+  const testBlocks = Array.from({ length: TEST_BLOCKS }, (_, blockIndex) => {
     const trials = [];
     for (const [sizeIndex, size] of SET_SIZES.entries()) {
-      const order = positions[sizeIndex];
-      for (let repetition = 0; repetition < 2; repetition += 1) {
-        const targetPosition = order[(blockIndex * 2 + repetition) % size];
-        trials.push(makeTrial(type, size, targetPosition), makeTrial(type, size, null));
-      }
+      const targetPosition = positions[sizeIndex][blockIndex % size];
+      trials.push(makeTrial(type, size, targetPosition), makeTrial(type, size, null));
     }
-    return { type, phase: "test", trials: shuffled(trials) };
+    return { phase: "test", number: blockIndex + 1, trials: shuffled(trials) };
   });
   return [practice, ...testBlocks];
-}
-
-export function makeBlocks(sessionType, type) {
-  if (sessionType === "pilot") return pilotBlocks(type);
-
-  return [{
-    type,
-    phase: "test",
-    trials: shuffled(SET_SIZES).map((size, index) => {
-      const targetPosition = index % 2 === 0 ? Math.floor(Math.random() * size) : null;
-      return makeTrial(type, size, targetPosition);
-    }),
-  }];
 }

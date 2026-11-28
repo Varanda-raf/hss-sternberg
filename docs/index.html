@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mémoire à court terme · Projet HSS</title>
-  <link rel="stylesheet" href="./style.css?v=4">
-  <script type="module" src="./experiment.js?v=4"></script>
+  <link rel="stylesheet" href="./style.css?v=5">
+  <script type="module" src="./experiment.js?v=5"></script>
 </head>
 <body>
   <main>
@@ -13,7 +13,7 @@
       <header>
         <p class="course">Approches expérimentales de la cognition</p>
         <h1 id="intro-title">Mémoire à court terme</h1>
-        <p class="lead">Mémorisez une courte série d’éléments. Après la pause, indiquez si l’élément affiché faisait partie de la série.</p>
+        <p class="lead">Mémorisez les éléments qui apparaissent un à un. Indiquez ensuite si l’élément présenté après la pause faisait partie de la série.</p>
       </header>
 
       <figure class="example">
@@ -25,18 +25,24 @@
         </figcaption>
       </figure>
 
-      <p class="test-length">Choisissez un test. La démonstration comporte 6 essais.</p>
+      <p class="test-length"><strong>10 minutes maximum après le démarrage.</strong> Il y a 2 essais d’entraînement et 36 essais de test. Gardez cette page ouverte et répondez le plus vite possible tout en évitant les erreurs.</p>
+      <p id="pilot-note" hidden>Passation pilote.</p>
+      <p class="choice-label">Choisissez un seul test.</p>
       <form id="test-form" aria-label="Choisir un test">
-        <button type="submit" value="digits">Chiffres</button>
-        <button type="submit" value="symbols">Symboles abstraits</button>
+        <button type="submit" value="digits" disabled>Symboles familiers <span>Chiffres de 0 à 9</span></button>
+        <button type="submit" value="symbols" disabled>Symboles abstraits <span>Formes inventées</span></button>
       </form>
+      <noscript><p>Activez JavaScript pour lancer le test.</p></noscript>
       <footer>
         <a href="https://github.com/Varanda-raf/hss-sternberg">Protocole et code du projet</a>
       </footer>
     </section>
 
     <section id="task" class="task" aria-label="Essai en cours" tabindex="-1" hidden>
-      <progress id="progress" aria-label="Avancement de la démonstration"></progress>
+      <div class="task-status">
+        <p id="trial-counter"></p>
+        <progress id="progress" aria-label="Avancement du test"></progress>
+      </div>
       <div class="screen">
         <p id="phase"></p>
         <p id="stimulus"></p>
@@ -48,12 +54,12 @@
     </section>
 
     <section id="result" class="result" aria-labelledby="result-title" hidden>
-      <h1 id="result-title" tabindex="-1">Démonstration terminée</h1>
+      <h1 id="result-title" tabindex="-1">Test terminé</h1>
       <p id="result-summary"></p>
-      <p>Si vous avez reçu une invitation, vous pouvez télécharger le CSV et le renvoyer dans la même conversation privée.</p>
+      <p id="download-instructions">Téléchargez le CSV. Si vous avez reçu une invitation, renvoyez le fichier dans la même conversation privée.</p>
       <div class="result-actions">
         <button id="download" type="button">Télécharger le CSV</button>
-        <button id="restart" type="button" class="secondary">Choisir un autre test</button>
+        <button id="restart" type="button" class="secondary">Retour à l’accueil</button>
       </div>
     </section>
   </main>

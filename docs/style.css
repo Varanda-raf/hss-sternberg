@@ -43,12 +43,15 @@ h1 {
   font-size: 0.84rem;
 }
 
-.test-length { margin-block-end: 0.55rem; }
+.test-length { margin-block-end: 0.75rem; }
+.choice-label { margin-block-end: 0.45rem; }
 #test-form, .response-buttons, .result-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
 }
+
+#test-form button span { display: block; font-size: 0.9rem; font-weight: 400; }
 
 button {
   min-height: 3.85rem;
@@ -76,7 +79,9 @@ button:disabled {
 :focus-visible { outline: 3px solid #89510b; outline-offset: 3px; }
 
 .task { max-width: 36rem; margin-inline: auto; }
-progress { display: block; width: 100%; height: 0.45rem; margin-block-end: 0.8rem; }
+.task-status { margin-block-end: 0.8rem; }
+#trial-counter { color: #3e554a; margin-block-end: 0.35rem; }
+progress { display: block; width: 100%; height: 0.45rem; }
 .screen {
   display: grid;
   grid-template-rows: minmax(2.3rem, auto) 1fr;

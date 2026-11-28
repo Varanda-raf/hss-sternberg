@@ -1,17 +1,24 @@
-import { makeBlocks, SYMBOL_PATHS } from "./trials.js?v=2";
+import { makeBlocks, SYMBOL_PATHS } from "./trials.js?v=5";
 
 const TIMING = { fixation: 500, item: 1200, delay: 2000, warning: 250, limit: 4000 };
-const LABELS = { digits: "Chiffres", symbols: "Symboles abstraits" };
+const PRACTICE_FEEDBACK = 1200;
+const PRACTICE_TRANSITION = 3000;
+const SESSION_LIMIT = 10 * 60 * 1000;
+const PROTOCOL_VERSION = 5;
+const LABELS = { digits: "Symboles familiers (chiffres)", symbols: "Symboles abstraits" };
 const SVG = "http://www.w3.org/2000/svg";
 const COLUMNS = [
-  "session_id", "session_type", "protocol_version", "mode", "stimulus_type", "trial",
+  "session_id", "session_type", "protocol_version", "mode", "stimulus_type",
+  "session_status", "session_duration_ms", "trial_phase", "block", "trial",
   "set_size", "sequence", "probe", "target_present", "response", "correct", "rt_ms",
   "response_input", "focus_lost", "viewport_width", "viewport_height", "browser",
 ];
 
 const intro = document.querySelector("#intro");
 const testForm = document.querySelector("#test-form");
+const testChoices = [...testForm.querySelectorAll("button")];
 const task = document.querySelector("#task");
+const trialCounter = document.querySelector("#trial-counter");
 const progress = document.querySelector("#progress");
 const phase = document.querySelector("#phase");
 const stimulus = document.querySelector("#stimulus");
@@ -20,11 +27,16 @@ const choices = [...responseButtons.querySelectorAll("button")];
 const result = document.querySelector("#result");
 const resultTitle = document.querySelector("#result-title");
 const resultSummary = document.querySelector("#result-summary");
+const downloadInstructions = document.querySelector("#download-instructions");
+const download = document.querySelector("#download");
 
 const localHosts = ["localhost", "127.0.0.1", "[::1]"];
 const mode = localHosts.includes(window.location.hostname) ? "presentiel" : "distance";
+const sessionType = new URLSearchParams(window.location.search).get("pilot") === "1" ? "pilot" : "study";
 let session = null;
 let focusLost = false;
+
+document.querySelector("#pilot-note").hidden = sessionType !== "pilot";
 
 function show(label, item) {
   phase.textContent = label;
@@ -50,42 +62,83 @@ function show(label, item) {
   stimulus.replaceChildren(svg);
 }
 
-function showFor(label, item, duration) {
-  return new Promise(resolve => {
-    requestAnimationFrame(() => {
-      show(label, item);
-      setTimeout(resolve, duration);
-    });
-  });
+function elapsedTime() {
+  return Math.max(performance.now() - session.startedAt, Date.now() - session.startedAtWall);
 }
 
-function askForResponse(probe) {
-  return new Promise(resolve => {
-    requestAnimationFrame(() => {
-      show("Était-il dans la série ?", probe);
-      const onset = performance.now();
-      const listeners = new AbortController();
-      let pointerType = "";
+function checkDeadline() {
+  if (session?.status === "running" && elapsedTime() >= SESSION_LIMIT) session.controller.abort();
+}
 
-      function finish(response, rtMs = "", input = "") {
-        clearTimeout(timeout);
-        listeners.abort();
-        choices.forEach(button => { button.disabled = true; });
-        resolve({ response, rtMs, input });
-      }
-
-      const timeout = setTimeout(() => finish("timeout"), TIMING.limit);
-      responseButtons.addEventListener("pointerdown", event => {
-        pointerType = event.pointerType;
-      }, { signal: listeners.signal });
-      responseButtons.addEventListener("click", event => {
-        const button = event.target.closest("button");
-        if (!button || button.disabled) return;
-        const input = event.detail === 0 ? "keyboard" : event.pointerType || pointerType || "unknown";
-        finish(button.value, Number((performance.now() - onset).toFixed(1)), input);
-      }, { signal: listeners.signal });
-      choices.forEach(button => { button.disabled = false; });
+async function waitFor(schedule, cancel, signal) {
+  checkDeadline();
+  signal.throwIfAborted();
+  await new Promise((resolve, reject) => {
+    const handle = schedule(() => {
+      signal.removeEventListener("abort", abort);
+      resolve();
     });
+    function abort() {
+      cancel(handle);
+      reject(signal.reason);
+    }
+    signal.addEventListener("abort", abort, { once: true });
+  });
+  checkDeadline();
+  signal.throwIfAborted();
+}
+
+async function showFor(label, item, duration, signal) {
+  await waitFor(requestAnimationFrame, cancelAnimationFrame, signal);
+  show(label, item);
+  await waitFor(callback => setTimeout(callback, duration), clearTimeout, signal);
+}
+
+async function askForResponse(probe, signal) {
+  await waitFor(requestAnimationFrame, cancelAnimationFrame, signal);
+  show("Faisait-il partie de la série ?", probe);
+  const onset = performance.now();
+
+  return new Promise((resolve, reject) => {
+    const listeners = new AbortController();
+    const timeout = setTimeout(() => finish("timeout"), TIMING.limit);
+    let pointerType = "";
+
+    function cleanUp() {
+      clearTimeout(timeout);
+      signal.removeEventListener("abort", abort);
+      listeners.abort();
+      choices.forEach(button => { button.disabled = true; });
+    }
+
+    function abort() {
+      cleanUp();
+      reject(signal.reason);
+    }
+
+    function finish(response, rtMs = "", input = "") {
+      checkDeadline();
+      if (signal.aborted) return;
+      cleanUp();
+      resolve({ response, rtMs, input });
+    }
+
+    signal.addEventListener("abort", abort, { once: true });
+    responseButtons.addEventListener("pointerdown", event => {
+      pointerType = event.pointerType;
+    }, { signal: listeners.signal });
+    responseButtons.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button || button.disabled) return;
+      const rtMs = performance.now() - onset;
+      if (rtMs >= TIMING.limit) {
+        finish("timeout");
+        return;
+      }
+      const input = event.detail === 0 ? "keyboard" : event.pointerType || pointerType || "unknown";
+      finish(button.value, Number(rtMs.toFixed(1)), input);
+    }, { signal: listeners.signal });
+    choices.forEach(button => { button.disabled = false; });
   });
 }
 
@@ -96,21 +149,20 @@ function recordFocusLoss() {
 window.addEventListener("blur", recordFocusLoss);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) recordFocusLoss();
+  checkDeadline();
 });
+window.addEventListener("pageshow", checkDeadline);
 
-async function runTrial(trial) {
+async function runTrial(trial, block, signal) {
   focusLost = document.hidden || !document.hasFocus();
-  await showFor("Fixez la croix", "+", TIMING.fixation);
-  for (const item of trial.sequence) await showFor("Mémorisez", item, TIMING.item);
-  await showFor("", "", TIMING.delay);
-  await showFor("", "●", TIMING.warning);
-  const { response, rtMs, input } = await askForResponse(trial.probe);
+  await showFor("Fixez la croix", "+", TIMING.fixation, signal);
+  for (const item of trial.sequence) await showFor("Mémorisez", item, TIMING.item, signal);
+  await showFor("", "", TIMING.delay, signal);
+  await showFor("", "●", TIMING.warning, signal);
+  const { response, rtMs, input } = await askForResponse(trial.probe, signal);
   return {
-    session_id: session.id,
-    session_type: "demo",
-    protocol_version: 4,
-    mode,
-    stimulus_type: session.type,
+    trial_phase: block.phase,
+    block: block.number,
     trial: session.rows.length + 1,
     set_size: trial.sequence.length,
     sequence: trial.sequence.join(" "),
@@ -127,29 +179,71 @@ async function runTrial(trial) {
   };
 }
 
+async function runBlocks(blocks, signal) {
+  let completed = 0;
+  for (const block of blocks) {
+    for (const [index, trial] of block.trials.entries()) {
+      const practice = block.phase === "practice";
+      trialCounter.textContent = practice
+        ? `Entraînement ${index + 1} / ${block.trials.length}`
+        : `Test ${completed + 1} / ${progress.max}`;
+      const row = await runTrial(trial, block, signal);
+      session.rows.push(row);
+      if (practice) {
+        let feedback = row.correct ? "Bonne réponse." : "Réponse incorrecte.";
+        if (row.response === "timeout") feedback = "Temps de réponse écoulé.";
+        const answer = row.target_present ? "Il fallait répondre « Oui »." : "Il fallait répondre « Non ».";
+        await showFor(`${feedback} ${answer}`, "", PRACTICE_FEEDBACK, signal);
+      } else {
+        completed += 1;
+        progress.value = completed;
+      }
+    }
+    if (block.phase === "practice") {
+      await showFor("L’entraînement est terminé. Le test va commencer.", "", PRACTICE_TRANSITION, signal);
+    }
+  }
+}
+
+function showResult() {
+  const completed = session.rows.filter(row => row.trial_phase === "test").length;
+  resultTitle.textContent = session.status === "complete" ? "Test terminé" : "Limite de 10 minutes atteinte";
+  resultSummary.textContent = `${LABELS[session.type]} · ${completed} / ${progress.max} essais de test effectués.`;
+  download.hidden = downloadInstructions.hidden = session.rows.length === 0;
+  task.hidden = true;
+  result.hidden = false;
+  resultTitle.focus();
+}
+
 testForm.addEventListener("submit", async event => {
   event.preventDefault();
   if (session || !event.submitter) return;
 
   const type = event.submitter.value;
-  const [{ trials }] = makeBlocks("demo", type);
-  session = { id: crypto.randomUUID(), type, rows: [] };
+  const blocks = makeBlocks(type);
+  const controller = new AbortController();
+  session = {
+    id: crypto.randomUUID(), type, rows: [], status: "running", controller,
+    startedAt: performance.now(), startedAtWall: Date.now(),
+  };
+  const deadlineTimer = setTimeout(() => controller.abort(), SESSION_LIMIT);
   intro.hidden = true;
-  progress.max = trials.length;
+  progress.max = blocks.slice(1).reduce((total, block) => total + block.trials.length, 0);
   progress.value = 0;
   task.hidden = false;
   task.focus();
 
-  for (const trial of trials) {
-    session.rows.push(await runTrial(trial));
-    progress.value = session.rows.length;
+  try {
+    await runBlocks(blocks, controller.signal);
+    session.status = "complete";
+  } catch (error) {
+    if (error !== controller.signal.reason) throw error;
+    session.status = "time_limit";
+  } finally {
+    clearTimeout(deadlineTimer);
   }
-
-  const correct = session.rows.filter(row => row.correct).length;
-  resultSummary.textContent = LABELS[type] + " · " + correct + " bonnes réponses sur " + trials.length + ".";
-  task.hidden = true;
-  result.hidden = false;
-  resultTitle.focus();
+  session.duration = Math.round(Math.min(elapsedTime(), SESSION_LIMIT));
+  showResult();
 });
 
 function csvCell(value) {
@@ -157,13 +251,25 @@ function csvCell(value) {
   return /[,"\r\n]/.test(text) ? '"' + text.replaceAll('"', '""') + '"' : text;
 }
 
-document.querySelector("#download").addEventListener("click", () => {
-  const rows = session.rows.map(row => COLUMNS.map(column => csvCell(row[column])).join(","));
+download.addEventListener("click", () => {
+  const metadata = {
+    session_id: session.id,
+    session_type: sessionType,
+    protocol_version: PROTOCOL_VERSION,
+    mode,
+    stimulus_type: session.type,
+    session_status: session.status,
+    session_duration_ms: session.duration,
+  };
+  const rows = session.rows.map(trial => {
+    const row = { ...metadata, ...trial };
+    return COLUMNS.map(column => csvCell(row[column])).join(",");
+  });
   const csv = [COLUMNS.join(","), ...rows].join("\r\n") + "\r\n";
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = ["sternberg", "demo", mode, session.type, session.id].join("-") + ".csv";
+  link.download = ["sternberg", sessionType, mode, session.type, session.id].join("-") + ".csv";
   document.body.append(link);
   link.click();
   link.remove();
@@ -174,5 +280,7 @@ document.querySelector("#restart").addEventListener("click", () => {
   session = null;
   result.hidden = true;
   intro.hidden = false;
-  testForm.querySelector("button").focus();
+  testChoices[0].focus();
 });
+
+testChoices.forEach(button => { button.disabled = false; });
