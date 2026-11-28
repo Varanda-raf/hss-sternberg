@@ -6,18 +6,21 @@ Le temps de décision augmente-t-il avec le nombre d'éléments à mémoriser ? 
 
 ## Déroulement d'un essai
 
-Dans l'expérience 1 de Sternberg, chaque série comprenait **de 1 à 6 chiffres distincts** tirés parmi **0 à 9**. Les chiffres étaient présentés un à un, à raison de **1 200 ms par chiffre**. La liste était suivie d'une attente de **2 000 ms**, puis d'un signal d'avertissement et du chiffre de test. Après la décision et le retour sur l'exactitude de celle-ci, le participant tentait de rappeler la série dans l'ordre. L'étude comportait 24 essais d'entraînement et 144 essais de test par personne. [Sternberg, 1966, expérience 1, p. 652](https://doi.org/10.1126/science.153.3736.652)
+La version 5 reprend les deux durées publiées pour l'expérience 1. La condition chiffres utilise les stimuli d'origine. La condition symboles abstraits étend la tâche aux formes inventées. [Sternberg, 1966, expérience 1, p. 652](https://doi.org/10.1126/science.153.3736.652)
 
-| Étape | Paramètre de la version 5 |
-| --- | --- |
-| Croix de fixation | 500 ms |
-| Série de 1 à 6 symboles distincts | 1 200 ms par symbole |
-| Écran vide après le dernier symbole | 2 000 ms |
-| Signal d'avertissement visuel | 250 ms |
-| Symbole de test | Jusqu'à la réponse, avec une limite de 4 000 ms |
-| Réponse | Boutons « Oui » et « Non » à l'écran |
+| Étape | Sternberg, expérience 1 | Version web (protocole 5) |
+| --- | --- | --- |
+| Croix de fixation | — | 500 ms |
+| Série de 1 à 6 éléments distincts | 1 200 ms par chiffre, de 0 à 9 | 1 200 ms par chiffre ou symbole abstrait |
+| Attente après le dernier élément | 2 000 ms | 2 000 ms |
+| Signal d'avertissement | Signal avant l’élément de test | Point pendant 250 ms |
+| Décision | Deux leviers | Boutons « Oui » et « Non », délai de 4 000 ms |
+| Après la décision | Voyant d’exactitude, puis rappel de la série dans l’ordre | Retour pendant l’entraînement. Dans le bloc de test, la décision termine l’essai. |
+| Essais par personne | 24 d’entraînement et 144 de test | 2 d’entraînement et 36 de test |
 
-Le temps de décision part de l'affichage du symbole de test et s'arrête à l'activation d'un bouton. Le mode de réponse est enregistré. L’entraînement comprend 2 essais, avec une cible présente pour une série de 2 et une cible absente pour une série de 4, dans un ordre aléatoire. Le retour est affiché pendant 1 200 ms après chaque essai d’entraînement. Une transition de 3 000 ms précède le test. Les essais du test s’enchaînent sans pause programmée et sans retour sur l’exactitude.
+Le temps de décision part de l'affichage du symbole de test et s'arrête à l'activation d'un bouton. Le mode de réponse est enregistré. Dans l’expérience 1, le rappel dans l’ordre servait à faire conserver la série et son ordre jusqu’à la décision. Pour 144 essais répartis également sur les six longueurs, la présentation et l’attente seules prendraient environ 15 minutes. [Sternberg, 1969, Exp. 1](https://web.stanford.edu/class/psych205/papers/Sternberg-1969.pdf)
+
+L’entraînement web comprend 2 essais, avec une cible présente pour une série de 2 et une cible absente pour une série de 4, dans un ordre aléatoire. Le retour est affiché pendant 1 200 ms après chaque essai d’entraînement. Une transition de 3 000 ms précède le test. Les essais du test s’enchaînent sans pause programmée et sans retour sur l’exactitude.
 
 ## Plan de collecte
 

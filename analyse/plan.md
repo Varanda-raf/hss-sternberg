@@ -7,11 +7,15 @@
 3. Calculer le même contraste pour les symboles abstraits et comparer les deux groupes de façon descriptive si chacun choisit son test. Le choix du test, la similarité visuelle et la facilité à nommer les éléments peuvent influer sur la comparaison.
 4. Pour la comparaison présentiel-distance, comparer le contraste **6 − 2** des chiffres entre les groupes et montrer les observations individuelles. Les résultats portent sur les conditions observées, qui peuvent différer par le matériel, l'environnement et le recrutement.
 
+Pour rapprocher le résultat de celui de Sternberg, tracer aussi le temps de réaction en fonction des six longueurs et estimer la pente en millisecondes par élément, en commençant par les chiffres. Les 37,9 ms par chiffre de l'expérience 1 fournissent un repère historique. Le matériel, les étapes de l'essai et le nombre d’essais diffèrent entre les deux protocoles. [Sternberg, 1966, fig. 1](https://doi.org/10.1126/science.153.3736.652)
+
 L'unité d'analyse est le participant. Pour l’analyse principale, retenir les sessions `study` et les essais `test`. Définir après le pilote, avant la collecte, les critères d'exclusion pour les sessions incomplètes, les réponses trop précoces et les pertes de focus. Compter les omissions et rapporter les exclusions par modalité.
 
 ## CSV des sessions
 
 Une ligne correspond à un essai. Les valeurs de `mode` sont `presentiel` et `distance`. Chaque CSV contient un seul type de stimulus.
+
+Le fichier commence par les colonnes utiles à la lecture des essais, dont `set_size`, `correct` et `rt_ms`. Les nouveaux exports utilisent `;` comme séparateur, `,` pour les décimales et UTF-8 avec BOM. Dans Excel, si l’ouverture affiche une seule colonne, importer avec **Données → À partir d’un fichier texte/CSV** et choisir `;`. Pour les anciens fichiers dont l’en-tête commence par `session_id,`, utiliser `,` comme séparateur de colonnes et `.` pour les décimales.
 
 | Colonne | Valeur |
 | --- | --- |

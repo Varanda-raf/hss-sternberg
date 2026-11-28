@@ -7,11 +7,12 @@ const SESSION_LIMIT = 10 * 60 * 1000;
 const PROTOCOL_VERSION = 5;
 const LABELS = { digits: "Symboles familiers (chiffres)", symbols: "Symboles abstraits" };
 const SVG = "http://www.w3.org/2000/svg";
+const CSV_SEPARATOR = ";";
 const COLUMNS = [
-  "session_id", "session_type", "protocol_version", "mode", "stimulus_type",
-  "session_status", "session_duration_ms", "trial_phase", "block", "trial",
-  "set_size", "sequence", "probe", "target_present", "response", "correct", "rt_ms",
-  "response_input", "focus_lost", "viewport_width", "viewport_height", "browser",
+  "trial", "trial_phase", "set_size", "sequence", "probe", "target_present",
+  "response", "correct", "rt_ms", "focus_lost", "response_input", "block",
+  "stimulus_type", "session_id", "session_type", "protocol_version", "mode",
+  "session_status", "session_duration_ms", "viewport_width", "viewport_height", "browser",
 ];
 
 const intro = document.querySelector("#intro");
@@ -247,8 +248,9 @@ testForm.addEventListener("submit", async event => {
 });
 
 function csvCell(value) {
+  if (typeof value === "number") return String(value).replace(".", ",");
   const text = String(value);
-  return /[,"\r\n]/.test(text) ? '"' + text.replaceAll('"', '""') + '"' : text;
+  return /[;"\r\n]/.test(text) ? '"' + text.replaceAll('"', '""') + '"' : text;
 }
 
 download.addEventListener("click", () => {
@@ -263,9 +265,9 @@ download.addEventListener("click", () => {
   };
   const rows = session.rows.map(trial => {
     const row = { ...metadata, ...trial };
-    return COLUMNS.map(column => csvCell(row[column])).join(",");
+    return COLUMNS.map(column => csvCell(row[column])).join(CSV_SEPARATOR);
   });
-  const csv = [COLUMNS.join(","), ...rows].join("\r\n") + "\r\n";
+  const csv = "\uFEFF" + [COLUMNS.join(CSV_SEPARATOR), ...rows].join("\r\n") + "\r\n";
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
