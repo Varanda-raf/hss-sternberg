@@ -35,4 +35,4 @@ L’entraînement web comprend 2 essais, avec une cible présente pour une séri
 
 Essayer les deux tests dans les deux modalités avec le paramètre `?pilot=1`. Vérifier que les glyphes sont distincts et demander aux personnes du pilote si certains leur rappellent un symbole connu. Vérifier aussi la compréhension des consignes, les boutons sur téléphone, le téléchargement du fichier et l'exactitude des réponses pour les séries de six éléments. Mesurer la durée et tester la remise des fichiers à distance. Figer ensuite les stimuli, les temps, le nombre d'essais et les critères de validité avant la collecte principale.
 
-Pour les essais à distance, envoyer le lien pilote ou le lien de passation depuis le [README](README.md) par message privé. À la fin, la personne peut télécharger son CSV et le renvoyer dans la même conversation privée.
+Pour les essais à distance avec enregistrement automatique, envoyer le lien d’invitation de collecte par message privé. À la fin, l’écran confirme la réception et propose de télécharger une copie du CSV. Les liens publics du [README](README.md) permettent aussi une passation avec export manuel.

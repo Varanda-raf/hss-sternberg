@@ -5,6 +5,7 @@ const PRACTICE_FEEDBACK = 1200;
 const PRACTICE_TRANSITION = 3000;
 const SESSION_LIMIT = 10 * 60 * 1000;
 const PROTOCOL_VERSION = 5;
+const COLLECTOR_URL = "https://collecte-sternberg-hss.notablesloth16.chatgpt.site/api/results";
 const LABELS = { digits: "Symboles familiers (chiffres)", symbols: "Symboles abstraits" };
 const SVG = "http://www.w3.org/2000/svg";
 const CSV_SEPARATOR = ";";
@@ -18,6 +19,9 @@ const COLUMNS = [
 const intro = document.querySelector("#intro");
 const testForm = document.querySelector("#test-form");
 const testChoices = [...testForm.querySelectorAll("button")];
+const participantFields = document.querySelector("#participant-fields");
+const participantName = document.querySelector("#participant-name");
+const participantEmail = document.querySelector("#participant-email");
 const task = document.querySelector("#task");
 const trialCounter = document.querySelector("#trial-counter");
 const progress = document.querySelector("#progress");
@@ -30,14 +34,22 @@ const resultTitle = document.querySelector("#result-title");
 const resultSummary = document.querySelector("#result-summary");
 const downloadInstructions = document.querySelector("#download-instructions");
 const download = document.querySelector("#download");
+const restart = document.querySelector("#restart");
+const saveStatus = document.querySelector("#save-status");
+const retrySave = document.querySelector("#retry-save");
 
 const localHosts = ["localhost", "127.0.0.1", "[::1]"];
 const mode = localHosts.includes(window.location.hostname) ? "presentiel" : "distance";
 const sessionType = new URLSearchParams(window.location.search).get("pilot") === "1" ? "pilot" : "study";
+const invite = new URLSearchParams(window.location.hash.slice(1)).get("collecte") ?? "";
+const automaticCollection = /^[A-Za-z0-9_-]{43}$/.test(invite);
 let session = null;
 let focusLost = false;
 
 document.querySelector("#pilot-note").hidden = sessionType !== "pilot";
+document.querySelector("#collection-note").hidden = !automaticCollection;
+participantFields.hidden = participantFields.disabled = !automaticCollection;
+if (automaticCollection) downloadInstructions.textContent = "Vous pouvez télécharger une copie du CSV.";
 
 function show(label, item) {
   phase.textContent = label;
@@ -211,9 +223,11 @@ function showResult() {
   resultTitle.textContent = session.status === "complete" ? "Test terminé" : "Limite de 10 minutes atteinte";
   resultSummary.textContent = `${LABELS[session.type]} · ${completed} / ${progress.max} essais de test effectués.`;
   download.hidden = downloadInstructions.hidden = session.rows.length === 0;
+  saveStatus.hidden = retrySave.hidden = true;
   task.hidden = true;
   result.hidden = false;
   resultTitle.focus();
+  if (automaticCollection && session.file) saveResult();
 }
 
 testForm.addEventListener("submit", async event => {
@@ -225,6 +239,7 @@ testForm.addEventListener("submit", async event => {
   const controller = new AbortController();
   session = {
     id: crypto.randomUUID(), type, rows: [], status: "running", controller,
+    identity: automaticCollection ? { name: participantName.value.trim().replace(/\s+/g, " "), email: participantEmail.value.trim() } : null,
     startedAt: performance.now(), startedAtWall: Date.now(),
   };
   const deadlineTimer = setTimeout(() => controller.abort(), SESSION_LIMIT);
@@ -244,6 +259,7 @@ testForm.addEventListener("submit", async event => {
     clearTimeout(deadlineTimer);
   }
   session.duration = Math.round(Math.min(elapsedTime(), SESSION_LIMIT));
+  session.file = session.rows.length ? createSessionFile() : null;
   showResult();
 });
 
@@ -253,7 +269,7 @@ function csvCell(value) {
   return /[;"\r\n]/.test(text) ? '"' + text.replaceAll('"', '""') + '"' : text;
 }
 
-download.addEventListener("click", () => {
+function createSessionFile() {
   const metadata = {
     session_id: session.id,
     session_type: sessionType,
@@ -268,18 +284,53 @@ download.addEventListener("click", () => {
     return COLUMNS.map(column => csvCell(row[column])).join(CSV_SEPARATOR);
   });
   const csv = "\uFEFF" + [COLUMNS.join(CSV_SEPARATOR), ...rows].join("\r\n") + "\r\n";
+  const name = ["sternberg", sessionType, mode, session.type, session.id].join("-") + ".csv";
+  return { csv, name };
+}
+
+async function saveResult() {
+  retrySave.hidden = true;
+  restart.disabled = true;
+  saveStatus.hidden = false;
+  saveStatus.textContent = "Enregistrement des résultats…";
+  try {
+    const response = await fetch(COLLECTOR_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Collector-Key": invite },
+      body: JSON.stringify({ sessionId: session.id, csv: session.file.csv, identity: session.identity }),
+      keepalive: true,
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!response.ok || (await response.json()).saved !== true) throw new Error("Result not saved");
+    saveStatus.textContent = "Vos résultats ont été enregistrés.";
+  } catch {
+    saveStatus.textContent = "L’envoi a échoué. Réessayez ou téléchargez le CSV pour le remettre à la personne qui vous a invité.";
+    retrySave.hidden = false;
+  } finally {
+    restart.disabled = false;
+  }
+}
+
+retrySave.addEventListener("click", saveResult);
+window.addEventListener("online", () => {
+  if (!result.hidden && !retrySave.hidden) saveResult();
+});
+
+download.addEventListener("click", () => {
+  const { csv, name } = session.file;
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = ["sternberg", sessionType, mode, session.type, session.id].join("-") + ".csv";
+  link.download = name;
   document.body.append(link);
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
-document.querySelector("#restart").addEventListener("click", () => {
+restart.addEventListener("click", () => {
   session = null;
+  testForm.reset();
   result.hidden = true;
   intro.hidden = false;
   testChoices[0].focus();

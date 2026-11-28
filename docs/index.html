@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mémoire à court terme · Projet HSS</title>
-  <link rel="stylesheet" href="./style.css?v=5">
-  <script type="module" src="./experiment.js?v=5.1"></script>
+  <link rel="stylesheet" href="./style.css?v=5.3">
+  <script type="module" src="./experiment.js?v=5.3"></script>
 </head>
 <body>
   <main>
@@ -27,8 +27,18 @@
 
       <p class="test-length"><strong>10 minutes maximum après le démarrage.</strong> Il y a 2 essais d’entraînement et 36 essais de test. Gardez cette page ouverte et répondez le plus vite possible tout en évitant les erreurs.</p>
       <p id="pilot-note" hidden>Passation pilote.</p>
+      <p id="collection-note" hidden>Votre nom et votre adresse e-mail servent à repérer les participations multiples. Ils sont conservés séparément des réponses. À la fin, vos résultats sont envoyés automatiquement et vous pouvez télécharger une copie du CSV.</p>
       <p class="choice-label">Choisissez un seul test.</p>
       <form id="test-form" aria-label="Choisir un test">
+        <fieldset id="participant-fields" hidden disabled>
+          <legend>Identification</legend>
+          <label for="participant-name">Nom
+            <input id="participant-name" type="text" autocomplete="name" maxlength="120" pattern=".*\S.*" required>
+          </label>
+          <label for="participant-email">Adresse e-mail
+            <input id="participant-email" type="email" autocomplete="email" maxlength="254" required>
+          </label>
+        </fieldset>
         <button type="submit" value="digits" disabled>Symboles familiers <span>Chiffres de 0 à 9</span></button>
         <button type="submit" value="symbols" disabled>Symboles abstraits <span>Formes inventées</span></button>
       </form>
@@ -56,10 +66,12 @@
     <section id="result" class="result" aria-labelledby="result-title" hidden>
       <h1 id="result-title" tabindex="-1">Test terminé</h1>
       <p id="result-summary"></p>
+      <p id="save-status" role="status" hidden></p>
       <p id="download-instructions">Téléchargez le CSV. Si vous avez reçu une invitation, renvoyez le fichier dans la même conversation privée.</p>
       <div class="result-actions">
         <button id="download" type="button">Télécharger le CSV</button>
         <button id="restart" type="button" class="secondary">Retour à l’accueil</button>
+        <button id="retry-save" type="button" class="secondary" hidden>Réessayer l’envoi</button>
       </div>
     </section>
   </main>

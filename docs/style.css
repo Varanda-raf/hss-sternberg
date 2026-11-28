@@ -53,6 +53,29 @@ h1 {
 
 #test-form button span { display: block; font-size: 0.9rem; font-weight: 400; }
 
+#participant-fields {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.65rem;
+  margin: 0 0 0.35rem;
+  padding: 0.65rem;
+  border: 1px solid #d3ddd5;
+  border-radius: 0.38rem;
+}
+
+#participant-fields label { display: grid; gap: 0.25rem; }
+#participant-fields input {
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #7c9284;
+  border-radius: 0.25rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+
 button {
   min-height: 3.85rem;
   padding: 0.7rem 0.55rem;

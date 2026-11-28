@@ -9,7 +9,9 @@ Projet HSS « Approches expérimentales de la cognition », inspiré de la tâch
 
 Chaque personne choisit une seule version, chiffres familiers ou symboles abstraits. Elle réalise 2 essais d’entraînement et 36 essais de test, avec des séries de 1 à 6 éléments. Le parcours chronométré dure environ 7 minutes si chaque délai de réponse est utilisé en entier. Il s’arrête dans tous les cas à la limite de 10 minutes après le démarrage.
 
-Les réponses sont exportées dans un CSV généré par le navigateur. La personne télécharge le fichier à la fin et le renvoie dans la conversation privée où elle a reçu le lien. Le site ne demande pas de nom et ne transmet pas le fichier. Si la limite est atteinte, le CSV reprend les essais déjà terminés et signale la session incomplète.
+Avec un lien d’invitation de collecte, le résultat est envoyé automatiquement à la fin du test et l’écran confirme sa réception. Le téléchargement d’une copie reste possible. Le lien pilote ci-dessus permet de vérifier le parcours et de télécharger le CSV pour un retour manuel. Si la limite est atteinte, le CSV reprend les essais déjà terminés et signale la session incomplète.
+
+Le lien d’invitation demande le nom et l’e-mail avant le démarrage du test. Le collecteur enregistre les réponses et l’identification séparément, avec un identifiant de session aléatoire commun. Sur le poste du responsable, exécuter `./collecte/recuperar-csvs.ps1` dans PowerShell 7 pour rapatrier les CSV dans `data/piloto/` ou `data/coleta/` et les identifications dans `data/identificacao/participantes.tsv`. Le registre signale les adresses saisies plusieurs fois, indépendamment des majuscules. La commande utilise la configuration privée locale `data/.collector-local.json`.
 
 Pour lancer la même version localement, exécuter depuis la racine du dépôt, avec Python 3 :
 
@@ -22,7 +24,7 @@ Ouvrir ensuite [la page locale](http://127.0.0.1:8000/) pour une session en pré
 ## Plan du pilote et de la collecte
 
 1. Faire passer les deux versions sur ordinateur et téléphone avec le lien pilote. Chronométrer depuis la lecture des consignes jusqu’au téléchargement, vérifier les essais de six éléments et demander quels glyphes évoquent des symboles déjà connus.
-2. Vérifier le retour des CSV dans la conversation privée, puis figer les stimuli, les paramètres de passation et les critères d’exclusion. Si un paramètre expérimental change, incrémenter `protocol_version`.
+2. Avec le lien d’invitation de collecte, vérifier la confirmation à l’écran et la récupération du CSV, puis figer les stimuli, les paramètres de passation et les critères d’exclusion. Si un paramètre expérimental change, incrémenter `protocol_version`.
 3. Envoyer le lien de passation et suivre le nombre de sessions terminées par type de symbole et par modalité. Conserver les CSV dans `data/`, ignoré par Git.
 
 Exemple d’invitation après le pilote
